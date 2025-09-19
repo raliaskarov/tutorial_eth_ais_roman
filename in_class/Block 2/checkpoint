@@ -1,0 +1,2 @@
+model_checkpoint_path: "transformer,  100 dim_weights"
+all_model_checkpoint_paths: "transformer,  100 dim_weights"
