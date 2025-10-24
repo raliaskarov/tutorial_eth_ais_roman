@@ -1,0 +1,6 @@
+      item  quantity expiry_date
+0     Milk         2  2025-03-10
+1     Eggs        12  2025-03-15
+2   Cheese         1  2025-03-20
+3   Apples         6  2025-03-25
+4  Carrots         5  2025-04-01

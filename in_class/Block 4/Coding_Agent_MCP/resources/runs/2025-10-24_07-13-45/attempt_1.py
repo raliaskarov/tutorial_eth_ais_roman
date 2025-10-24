@@ -1,0 +1,1 @@
+print("ANSWER:", 17 * 23)

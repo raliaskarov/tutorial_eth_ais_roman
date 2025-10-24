@@ -1,7 +1,6 @@
-Item,Quantity,Expiry Date
+item,quantity,expiry_date
 Milk,2,2025-03-10
 Eggs,12,2025-03-15
 Cheese,1,2025-03-20
 Apples,6,2025-03-25
 Carrots,5,2025-04-01
-tomato,1,2025-11-07
