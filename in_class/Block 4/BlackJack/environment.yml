@@ -1,0 +1,15 @@
+name: sarsa-rl
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.10
+  - pip
+  - jupyter
+  - numpy
+  - swig
+  - pip:
+    - gymnasium[box2d]
+    - pygame>=2.6.0
+    - imageio
+    - imageio-ffmpeg

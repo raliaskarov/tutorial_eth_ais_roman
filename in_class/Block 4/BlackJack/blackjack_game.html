@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simplified Blackjack - SARSA Learning Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 900px;
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.95;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .rules {
+            background: #f8f9fa;
+            border-left: 5px solid #667eea;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 5px;
+        }
+
+        .rules h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .rules ul {
+            list-style-position: inside;
+            line-height: 1.8;
+        }
+
+        .rules li {
+            margin-bottom: 8px;
+        }
+
+        .rules .highlight {
+            background: #fff3cd;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-weight: bold;
+        }
+
+        .game-area {
+            background: #1a5f1a;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.3);
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .stat-box {
+            background: rgba(255,255,255,0.95);
+            padding: 15px 25px;
+            border-radius: 10px;
+            text-align: center;
+            min-width: 120px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .stat-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .cards-display {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+            min-height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .card {
+            background: white;
+            width: 60px;
+            height: 85px;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            animation: dealCard 0.3s ease-out;
+        }
+
+        @keyframes dealCard {
+            from {
+                transform: translateY(-20px) scale(0.8);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 15px 40px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .btn-hit {
+            background: #28a745;
+            color: white;
+        }
+
+        .btn-hit:hover:not(:disabled) {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+
+        .btn-stick {
+            background: #dc3545;
+            color: white;
+        }
+
+        .btn-stick:hover:not(:disabled) {
+            background: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+
+        .btn-reset {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-reset:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .message {
+            text-align: center;
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: bold;
+            min-height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .message.win {
+            background: #d4edda;
+            color: #155724;
+            border: 2px solid #28a745;
+        }
+
+        .message.lose {
+            background: #f8d7da;
+            color: #721c24;
+            border: 2px solid #dc3545;
+        }
+
+        .message.playing {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 2px solid #17a2b8;
+        }
+
+        .action-description {
+            background: #fff3cd;
+            border-left: 5px solid #ffc107;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 5px;
+        }
+
+        .action-description h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .reward-animation {
+            animation: pulse 0.5s ease-in-out;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            color: #666;
+            border-top: 1px solid #dee2e6;
+        }
+
+        .history-entry {
+            background: white;
+            padding: 10px 15px;
+            margin-bottom: 8px;
+            border-radius: 5px;
+            border-left: 4px solid #667eea;
+            font-size: 0.9em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .history-entry.bust {
+            border-left-color: #dc3545;
+            background: #fff5f5;
+        }
+
+        .history-entry.stick {
+            border-left-color: #28a745;
+            background: #f5fff5;
+        }
+
+        .history-number {
+            font-weight: bold;
+            color: #667eea;
+            margin-right: 10px;
+        }
+
+        .history-details {
+            flex: 1;
+        }
+
+        .history-reward {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .history-reward.positive {
+            color: #28a745;
+        }
+
+        .history-reward.negative {
+            color: #dc3545;
+        }
+
+        .history-reward.zero {
+            color: #666;
+        }
+
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .stat-value {
+                font-size: 1.5em;
+            }
+
+            .history-entry {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎰 Simplified Blackjack 🎰</h1>
+            <p>A fun twist on the classic card game!</p>
+        </div>
+
+        <div class="content">
+            <div class="rules">
+                <h2>📋 Game Rules</h2>
+                <ul>
+                    <li>You start with a sum of <span class="highlight">0</span></li>
+                    <li>Cards are random integers from <span class="highlight">1 to 10</span></li>
+                    <li><strong>HIT:</strong> Draw a card and add it to your sum
+                        <ul style="margin-left: 30px; margin-top: 5px;">
+                            <li>If sum ≤ 21: Get <span class="highlight">reward = card value</span></li>
+                            <li>If sum > 21: <span class="highlight">BUST!</span> Game ends with <span class="highlight">reward = -sum</span></li>
+                        </ul>
+                    </li>
+                    <li><strong>STICK:</strong> End the game with <span class="highlight">reward = 0</span></li>
+                    <li><strong>Goal:</strong> Maximize your total reward across all games!</li>
+                </ul>
+            </div>
+
+            <div class="game-area">
+                <div class="stats">
+                    <div class="stat-box">
+                        <div class="stat-label">Current Sum</div>
+                        <div class="stat-value" id="current-sum">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Episode Reward</div>
+                        <div class="stat-value" id="episode-reward">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Cards Drawn</div>
+                        <div class="stat-value" id="cards-count">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Games Played</div>
+                        <div class="stat-value" id="games-played">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Total Reward</div>
+                        <div class="stat-value" id="total-reward">0</div>
+                    </div>
+                </div>
+
+                <div class="cards-display" id="cards-display">
+                    <p style="color: white; opacity: 0.7;">Press HIT to draw your first card!</p>
+                </div>
+
+                <div class="buttons">
+                    <button class="btn-hit" id="btn-hit" onclick="hit()">🎴 HIT</button>
+                    <button class="btn-stick" id="btn-stick" onclick="stick()">🛑 STICK</button>
+                    <button class="btn-reset" id="btn-reset" onclick="reset()">🔄 NEW GAME</button>
+                </div>
+
+                <div class="message playing" id="message">
+                    Ready to play! Will you HIT or STICK?
+                </div>
+            </div>
+
+            <div class="action-description">
+                <h3>💡 Strategy Hints</h3>
+                <p><strong>Risk vs. Reward:</strong> Each HIT gives you immediate reward (the card value), but risks busting (losing your sum as penalty).</p>
+                <p style="margin-top: 10px;"><strong>Try this:</strong> Play a few rounds and notice when you tend to stick. Around sum 17? 18? 19? Can you find the optimal strategy?</p>
+            </div>
+
+            <div class="action-description">
+                <h3>📊 Game History</h3>
+                <div id="game-history" style="max-height: 300px; overflow-y: auto; margin-top: 10px;">
+                    <p style="color: #666; font-style: italic;">No games played yet. Start playing to see your history!</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Challenge yourself: Can you develop a winning strategy?</p>
+            <p style="margin-top: 5px; font-size: 0.9em;">Track your total reward across multiple games and see if you can beat your high score!</p>
+        </div>
+    </div>
+
+    <script>
+        let sum = 0;
+        let episodeReward = 0;
+        let totalReward = 0;
+        let gamesPlayed = 0;
+        let cardsDrawn = 0;
+        let gameOver = false;
+        let cards = [];
+        let gameHistory = [];
+
+        function drawCard() {
+            return Math.floor(Math.random() * 10) + 1;
+        }
+
+        function updateDisplay() {
+            document.getElementById('current-sum').textContent = sum;
+            document.getElementById('episode-reward').textContent = episodeReward;
+            document.getElementById('total-reward').textContent = totalReward;
+            document.getElementById('games-played').textContent = gamesPlayed;
+            document.getElementById('cards-count').textContent = cardsDrawn;
+
+            // Update cards display
+            const cardsDisplay = document.getElementById('cards-display');
+            cardsDisplay.innerHTML = '';
+            cards.forEach(card => {
+                const cardElement = document.createElement('div');
+                cardElement.className = 'card';
+                cardElement.textContent = card;
+                cardsDisplay.appendChild(cardElement);
+            });
+
+            // Add reward animation
+            document.getElementById('episode-reward').classList.add('reward-animation');
+            document.getElementById('total-reward').classList.add('reward-animation');
+            setTimeout(() => {
+                document.getElementById('episode-reward').classList.remove('reward-animation');
+                document.getElementById('total-reward').classList.remove('reward-animation');
+            }, 500);
+        }
+
+        function addToHistory(outcome, finalSum, reward, cardsPlayed) {
+            const gameNumber = gamesPlayed;
+            const entry = {
+                gameNumber: gameNumber,
+                outcome: outcome,
+                finalSum: finalSum,
+                reward: reward,
+                cardsPlayed: cardsPlayed
+            };
+
+            gameHistory.push(entry);
+            updateHistoryDisplay();
+        }
+
+        function updateHistoryDisplay() {
+            const historyContainer = document.getElementById('game-history');
+
+            if (gameHistory.length === 0) {
+                historyContainer.innerHTML = '<p style="color: #666; font-style: italic;">No games played yet. Start playing to see your history!</p>';
+                return;
+            }
+
+            // Show most recent games first
+            const recentGames = gameHistory.slice().reverse();
+
+            historyContainer.innerHTML = '';
+            recentGames.forEach(entry => {
+                const div = document.createElement('div');
+                div.className = `history-entry ${entry.outcome}`;
+
+                const rewardClass = entry.reward > 0 ? 'positive' : entry.reward < 0 ? 'negative' : 'zero';
+                const rewardSign = entry.reward > 0 ? '+' : '';
+
+                div.innerHTML = `
+                    <span class="history-number">Game ${entry.gameNumber}</span>
+                    <span class="history-details">
+                        ${entry.outcome.toUpperCase()} at sum ${entry.finalSum} (${entry.cardsPlayed} cards)
+                    </span>
+                    <span class="history-reward ${rewardClass}">${rewardSign}${entry.reward}</span>
+                `;
+
+                historyContainer.appendChild(div);
+            });
+        }
+
+        function hit() {
+            if (gameOver) return;
+
+            const card = drawCard();
+            cards.push(card);
+            cardsDrawn++;
+            sum += card;
+
+            const messageEl = document.getElementById('message');
+
+            if (sum > 21) {
+                // BUST! Reward is negative of the sum (not the card)
+                const reward = -sum;
+                episodeReward += reward;
+                totalReward += reward;
+                gameOver = true;
+                gamesPlayed++;
+
+                // Add to history
+                addToHistory('bust', sum, reward, cardsDrawn);
+
+                messageEl.className = 'message lose';
+                messageEl.textContent = `💥 BUST! Sum = ${sum} > 21. Episode Reward = ${reward}. Total Reward = ${totalReward}`;
+
+                document.getElementById('btn-hit').disabled = true;
+                document.getElementById('btn-stick').disabled = true;
+            } else {
+                // Got reward equal to card value
+                const reward = card;
+                episodeReward += reward;
+                totalReward += reward;
+
+                messageEl.className = 'message win';
+                messageEl.textContent = `✓ Drew ${card}! Sum = ${sum}. Reward = +${reward}. Episode Reward = ${episodeReward}`;
+            }
+
+            updateDisplay();
+        }
+
+        function stick() {
+            if (gameOver) return;
+
+            gameOver = true;
+            gamesPlayed++;
+            const reward = 0;
+            // Reward is 0, so episode reward doesn't change
+            // totalReward doesn't change either
+
+            // Add to history
+            addToHistory('stick', sum, episodeReward, cardsDrawn);
+
+            const messageEl = document.getElementById('message');
+            messageEl.className = 'message playing';
+            messageEl.textContent = `✋ STICK! Sum = ${sum}. Episode Reward = ${episodeReward}. Total Reward = ${totalReward}`;
+
+            document.getElementById('btn-hit').disabled = true;
+            document.getElementById('btn-stick').disabled = true;
+
+            updateDisplay();
+        }
+
+        function reset() {
+            sum = 0;
+            episodeReward = 0;
+            cardsDrawn = 0;
+            gameOver = false;
+            cards = [];
+
+            document.getElementById('btn-hit').disabled = false;
+            document.getElementById('btn-stick').disabled = false;
+
+            const messageEl = document.getElementById('message');
+            messageEl.className = 'message playing';
+            messageEl.textContent = 'Ready to play! Will you HIT or STICK?';
+
+            const cardsDisplay = document.getElementById('cards-display');
+            cardsDisplay.innerHTML = '<p style="color: white; opacity: 0.7;">Press HIT to draw your first card!</p>';
+
+            updateDisplay();
+        }
+
+        // Initialize
+        updateDisplay();
+    </script>
+</body>
+</html>
