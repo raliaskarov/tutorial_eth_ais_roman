@@ -3,6 +3,7 @@
 # files files
 *.zip
 glove.6B.zip
+glove.6B.100d.txt
 **/download
 
 # ide settings
